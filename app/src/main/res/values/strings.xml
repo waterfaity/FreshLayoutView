@@ -1,3 +1,13 @@
 <resources>
-    <string name="app_name">FreshLayoutView</string>
+    <string name="fresh_head">这里是HeadView</string>
+    <string name="fresh_pull_to_refresh">下拉刷新</string>
+    <string name="fresh_release_to_refresh">释放立即刷新</string>
+    <string name="fresh_refreshing">正在刷新...</string>
+    <string name="fresh_refresh_succeed">刷新成功</string>
+    <string name="fresh_refresh_failed">刷新失败</string>
+    <string name="fresh_pull_up_to_load">上拉加载更多</string>
+    <string name="fresh_release_to_load">释放立即加载</string>
+    <string name="fresh_loading">正在加载...</string>
+    <string name="fresh_load_succeed">加载成功</string>
+    <string name="fresh_load_failed">加载失败</string>
 </resources>
