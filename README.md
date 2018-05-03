@@ -17,28 +17,7 @@
 
 </com.waterfairy.widget.refresh.baseView.FreshLayout>
 ```
-xml布局(自定义head/foot view)
-```xml
- <com.waterfairy.widget.refresh.baseView.FreshLayout
-        android:id="@+id/fresh_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
 
-        <com.waterfairy.test.MyHeadView
-            android:layout_width="match_parent"
-            android:layout_height="40dp"/>
-
-        <com.waterfairy.test.MyHeadView
-            android:layout_width="match_parent"
-            android:layout_height="40dp"/>
-
-        <com.waterfairy.widget.refresh.view.PullRefreshRecyclerView
-            android:id="@+id/recycler_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-
-    </com.waterfairy.widget.refresh.baseView.FreshLayout>
-```
 ```java
 freshLayout = findViewById(R.id.fresh_layout);
 freshLayout.setOnFreshListener(this);
@@ -104,6 +83,28 @@ public interface OnExtraViewStateChangeListener {
     void onLoadingFailed(int pos);
 
 }
+```
+xml布局(自定义head/foot view)
+```xml
+ <com.waterfairy.widget.refresh.baseView.FreshLayout
+        android:id="@+id/fresh_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.waterfairy.test.MyHeadView
+            android:layout_width="match_parent"
+            android:layout_height="40dp"/>
+
+        <com.waterfairy.test.MyHeadView
+            android:layout_width="match_parent"
+            android:layout_height="40dp"/>
+
+        <com.waterfairy.widget.refresh.view.PullRefreshRecyclerView
+            android:id="@+id/recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    </com.waterfairy.widget.refresh.baseView.FreshLayout>
 ```
 ### 关于默认HeadView/FootView样式:
 ExtraView 中 <br><br>
