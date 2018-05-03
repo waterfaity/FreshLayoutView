@@ -2,8 +2,7 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="40dp"
-    android:background="@color/refresh_bg_fresh">
+    android:layout_height="40dp" >
 
     <ImageView
         android:id="@+id/refresh_icon"

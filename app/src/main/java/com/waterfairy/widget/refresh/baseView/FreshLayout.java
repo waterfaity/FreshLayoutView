@@ -27,6 +27,7 @@ public class FreshLayout extends RelativeLayout {
     private TouchHandler mTouchHandler;
     //view是否已经创建
     private boolean isViewCreate;
+    private OnViewCreateListener onViewCreateListener;
 
     public FreshLayout(Context context) {
         this(context, null);
@@ -81,6 +82,7 @@ public class FreshLayout extends RelativeLayout {
             isViewCreate = true;
             findView();
             initView();
+            if (onViewCreateListener != null) onViewCreateListener.onViewCreate(this);
         }
         mTouchHandler.onLayout(l, r);
     }
@@ -122,5 +124,13 @@ public class FreshLayout extends RelativeLayout {
 
     public ExtraView getFootView() {
         return mFootView;
+    }
+
+    public void setOnViewCreateListener(OnViewCreateListener onViewCreateListener) {
+        this.onViewCreateListener = onViewCreateListener;
+    }
+
+    public static interface OnViewCreateListener {
+        void onViewCreate(FreshLayout freshLayout);
     }
 }

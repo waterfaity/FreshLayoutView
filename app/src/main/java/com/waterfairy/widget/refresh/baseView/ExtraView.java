@@ -22,6 +22,8 @@ import com.waterfairy.widget.refresh.inter.RefreshViewTool;
  * @Description: footView  headView
  */
 public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveStateChangeListener {
+    public static final int BLACK = 1;
+    public static final int WHITE = 0;
     private int height;
 
     private RotateAnimation rotateAnimation;
@@ -31,7 +33,41 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
     private TextView mTVFresh;
     private ImageView mIVFresh;
     private int mLoadingRes;
+    //资源id
+    private int textColor;
+    private int bgColor;
+    private int imgLoading;
+    private int imgSuccess;
+    private int imgFailed;
 
+    public void setViewTheme(int style) {
+        if (style == 0) {
+            setViewTheme(
+                    com.waterfairy.widget.refresh.R.color.refresh_bg_fresh_black,
+                    R.color.refresh_white,
+                    com.waterfairy.widget.refresh.R.mipmap.refresh_loading_black,
+                    com.waterfairy.widget.refresh.R.mipmap.refresh_successed_black,
+                    com.waterfairy.widget.refresh.R.mipmap.refresh_failed_black);
+        } else {
+            setViewTheme(
+                    R.color.refresh_white,
+                    R.color.refresh_bg_fresh_black,
+                    R.mipmap.refresh_loading,
+                    R.mipmap.refresh_successed,
+                    R.mipmap.refresh_failed);
+        }
+    }
+
+
+    public void setViewTheme(int textColor, int bgColor, int imgLoading, int imgSuccess, int imgFailed) {
+        this.textColor = textColor;
+        this.bgColor = bgColor;
+        this.imgLoading = imgLoading;
+        this.imgSuccess = imgSuccess;
+        this.imgFailed = imgFailed;
+        mLoadingRes = imgLoading;
+
+    }
 
     public ExtraView(Context context) {
         this(context, null);
@@ -39,7 +75,7 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
 
     public ExtraView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        mLoadingRes = R.mipmap.refresh_loading;
+        setViewTheme(WHITE);
         initAnim();
         addView();
         initView();
@@ -53,14 +89,17 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
         this.posTag = posTag;
     }
 
-    private void initView() {
-        mTVFresh = findViewById(R.id.refresh_text);
-        mIVFresh = findViewById(R.id.refresh_icon);
+    public void initView() {
+        mTVFresh.setTextColor(getResources().getColor(textColor));
+        mIVFresh.setImageResource(imgLoading);
+        setBackgroundColor(getResources().getColor(bgColor));
     }
 
     private void addView() {
         View inflate = LayoutInflater.from(getContext()).inflate(R.layout.refresh_layout_foot, this, false);
         addView(inflate);
+        mTVFresh = findViewById(R.id.refresh_text);
+        mIVFresh = findViewById(R.id.refresh_icon);
     }
 
 
@@ -81,7 +120,7 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
      */
     @Override
     public void onViewMove(float radio) {
-        setIconRes(R.mipmap.refresh_loading);
+        setIconRes(imgLoading);
         if (radio < 2) {
             if (posTag == POS_HEADER) {
                 mTVFresh.setText(R.string.fresh_pull_to_refresh);
@@ -124,7 +163,7 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
     @Override
     public void onLoadingSuccess() {
         mIVFresh.clearAnimation();
-        setIconRes(R.mipmap.refresh_succeed);
+        setIconRes(imgSuccess);
         mIVFresh.setRotation(0);
         if (posTag == POS_HEADER) {
             mTVFresh.setText(R.string.fresh_refresh_succeed);
@@ -139,7 +178,7 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
     @Override
     public void onLoadingFailed() {
         mIVFresh.clearAnimation();
-        setIconRes(R.mipmap.refresh_failed);
+        setIconRes(imgFailed);
         mIVFresh.setRotation(0);
         if (posTag == POS_HEADER) {
             mTVFresh.setText(R.string.fresh_refresh_failed);
@@ -152,4 +191,6 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
     public float getFreshHeight() {
         return getViewHeight() * 2;
     }
+
+
 }
