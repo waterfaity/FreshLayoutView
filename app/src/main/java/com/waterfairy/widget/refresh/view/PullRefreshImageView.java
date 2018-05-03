@@ -1,11 +1,13 @@
-package com.waterfairy.widget.freshlayoutview.view;
+package com.waterfairy.widget.refresh.view;
 
 import android.content.Context;
-import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
+import android.widget.ImageView;
+
+import com.waterfairy.widget.refresh.inter.PullRefresh;
 
 
-public class PullRefreshImageView extends AppCompatImageView implements PullRefresh {
+public class PullRefreshImageView extends ImageView implements PullRefresh {
 
     public PullRefreshImageView(Context context) {
         super(context);

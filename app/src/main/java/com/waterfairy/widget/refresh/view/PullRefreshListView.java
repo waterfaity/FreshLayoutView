@@ -1,8 +1,11 @@
-package com.waterfairy.widget.freshlayoutview.view;
+package com.waterfairy.widget.refresh.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.ListView;
+
+import com.waterfairy.widget.refresh.inter.PullRefresh;
+
 
 public class PullRefreshListView extends ListView implements PullRefresh {
 

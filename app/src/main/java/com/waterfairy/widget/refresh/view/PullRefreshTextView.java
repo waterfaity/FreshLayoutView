@@ -1,9 +1,12 @@
-package com.waterfairy.widget.freshlayoutview.view;
+package com.waterfairy.widget.refresh.view;
 
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.TextView;
+
+import com.waterfairy.widget.refresh.inter.PullRefresh;
+
 
 public class PullRefreshTextView extends TextView implements PullRefresh {
 

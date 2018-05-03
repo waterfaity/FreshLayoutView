@@ -1,6 +1,8 @@
-package com.waterfairy.widget.freshlayoutview.view;
+package com.waterfairy.widget.refresh.inter;
 
 public interface PullRefresh {
+
+
     /**
      * 判断是否可以下拉，如果不需要下拉功能可以直接return false
      *

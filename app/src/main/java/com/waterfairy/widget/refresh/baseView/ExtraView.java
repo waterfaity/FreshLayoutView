@@ -1,15 +1,19 @@
-package com.waterfairy.widget.freshlayoutview.fresh;
+package com.waterfairy.widget.refresh.baseView;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.animation.AnimationUtils;
+import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.waterfairy.widget.freshlayoutview.R;
+import com.waterfairy.widget.refresh.R;
+import com.waterfairy.widget.refresh.inter.OnMoveStateChangeListener;
+import com.waterfairy.widget.refresh.inter.RefreshViewTool;
 
 /**
  * @author water_fairy
@@ -18,12 +22,15 @@ import com.waterfairy.widget.freshlayoutview.R;
  * @Description: footView  headView
  */
 public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveStateChangeListener {
+    private int height;
 
+    private RotateAnimation rotateAnimation;
     //位置信息
     private int posTag;
     //view
     private TextView mTVFresh;
     private ImageView mIVFresh;
+    private int mLoadingRes;
 
 
     public ExtraView(Context context) {
@@ -32,8 +39,14 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
 
     public ExtraView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        mLoadingRes = R.mipmap.refresh_loading;
+        initAnim();
         addView();
         initView();
+    }
+
+    private void initAnim() {
+        rotateAnimation = (RotateAnimation) AnimationUtils.loadAnimation(getContext(), R.anim.rotate);
     }
 
     public void setPosTag(int posTag) {
@@ -47,7 +60,6 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
 
     private void addView() {
         View inflate = LayoutInflater.from(getContext()).inflate(R.layout.refresh_foot, this, false);
-//        View view = inflate(getContext(), R.layout.refresh_foot, this);
         addView(inflate);
     }
 
@@ -59,7 +71,9 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
 
     @Override
     public int getViewHeight() {
-        return (int) (40 * getContext().getResources().getDisplayMetrics().density);
+        if (height == 0)
+            height = (int) (40 * getContext().getResources().getDisplayMetrics().density);
+        return height;
     }
 
     /**
@@ -67,18 +81,27 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
      */
     @Override
     public void onViewMove(float radio) {
-        if (radio < 1) {
+        setIconRes(R.mipmap.refresh_loading);
+        if (radio < 2) {
             if (posTag == POS_HEADER) {
                 mTVFresh.setText(R.string.fresh_pull_to_refresh);
             } else if (posTag == POS_FOOTER) {
                 mTVFresh.setText(R.string.fresh_pull_up_to_load);
             }
-        } else if (radio > 1) {
+        } else if (radio > 2) {
             if (posTag == POS_HEADER) {
                 mTVFresh.setText(R.string.fresh_release_to_refresh);
             } else if (posTag == POS_FOOTER) {
                 mTVFresh.setText(R.string.fresh_release_to_refresh);
             }
+        }
+        mIVFresh.setRotation(radio * 360 / 4);
+    }
+
+    private void setIconRes(int loadingRes) {
+        if (mLoadingRes != loadingRes) {
+            this.mLoadingRes = loadingRes;
+            mIVFresh.setImageResource(loadingRes);
         }
     }
 
@@ -92,6 +115,7 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
         } else if (posTag == POS_FOOTER) {
             mTVFresh.setText(R.string.fresh_loading);
         }
+        mIVFresh.startAnimation(rotateAnimation);
     }
 
     /**
@@ -99,6 +123,9 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
      */
     @Override
     public void onLoadingSuccess() {
+        mIVFresh.clearAnimation();
+        setIconRes(R.mipmap.refresh_succeed);
+        mIVFresh.setRotation(0);
         if (posTag == POS_HEADER) {
             mTVFresh.setText(R.string.fresh_refresh_succeed);
         } else if (posTag == POS_FOOTER) {
@@ -111,10 +138,18 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
      */
     @Override
     public void onLoadingFailed() {
+        mIVFresh.clearAnimation();
+        setIconRes(R.mipmap.refresh_failed);
+        mIVFresh.setRotation(0);
         if (posTag == POS_HEADER) {
             mTVFresh.setText(R.string.fresh_refresh_failed);
         } else if (posTag == POS_FOOTER) {
             mTVFresh.setText(R.string.fresh_load_failed);
         }
+    }
+
+    @Override
+    public float getFreshHeight() {
+        return getViewHeight() * 2;
     }
 }

@@ -1,6 +1,6 @@
-package com.waterfairy.widget.freshlayoutview.fresh;
+package com.waterfairy.widget.refresh.inter;
 
-import com.waterfairy.widget.freshlayoutview.PullToRefreshLayout;
+import com.waterfairy.widget.refresh.baseView.FreshLayout;
 
 /**
  * @author water_fairy
@@ -14,6 +14,5 @@ public interface OnFreshListener {
 
     void onLoadMore(FreshLayout freshLayout);
 
-    void onReLoadMore(FreshLayout freshLayout);
 
 }

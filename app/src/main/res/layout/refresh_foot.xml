@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="40dp"
-    android:background="@color/bg_fresh">
+    android:background="@color/refresh_bg_fresh">
 
     <ImageView
         android:id="@+id/refresh_icon"
@@ -11,7 +11,7 @@
         android:layout_height="28dp"
         android:layout_centerVertical="true"
         android:layout_marginLeft="16dp"
-        android:src="@mipmap/loading"/>
+        android:src="@mipmap/refresh_loading"/>
 
     <TextView
         android:id="@+id/refresh_text"
@@ -22,6 +22,6 @@
         android:layout_centerInParent="true"
         android:gravity="center"
         android:text="@string/fresh_pull_to_refresh"
-        android:textColor="@color/white"
+        android:textColor="@color/refresh_white"
         android:textSize="14sp"/>
 </RelativeLayout>

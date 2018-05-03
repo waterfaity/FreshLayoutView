@@ -1,41 +1,42 @@
-package com.waterfairy.widget.freshlayoutview.fresh;
+package com.waterfairy.widget.refresh.baseView;
 
 import android.content.Context;
-import android.os.Handler;
-import android.os.Message;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.RelativeLayout;
 
+import com.waterfairy.widget.refresh.inter.OnFreshListener;
+import com.waterfairy.widget.refresh.inter.PullRefresh;
+import com.waterfairy.widget.refresh.inter.RefreshViewTool;
+
 /**
  * @author water_fairy
  * @email 995637517@qq.com
  * @date 2018/5/2
- * @Description:
+ * @Description: -
+ * 说明:
+ * 1.以 FreshLayout 为父类布局
+ * 2.添加字布局: 子布局两种 1>直接写滚动布局(默认添加head,foot)2>布局中加上 head和foot 布局
  */
 public class FreshLayout extends RelativeLayout {
-    //资源id
     //view
     private ExtraView mFootView, mHeadView;
     private View mFreshView;
     //touchHandler
     private TouchHandler mTouchHandler;
+    //view是否已经创建
+    private boolean isViewCreate;
 
     public FreshLayout(Context context) {
-        super(context);
+        this(context, null);
     }
 
     public FreshLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mTouchHandler = new TouchHandler();
     }
 
-
-    private void initData() {
-        if (mFreshView != null) {
-            mTouchHandler = new TouchHandler(this, mFreshView, mHeadView, mFootView);
-        }
-    }
 
     private void initView() {
         if (mFootView != null)
@@ -61,10 +62,8 @@ public class FreshLayout extends RelativeLayout {
                 if (childView instanceof ExtraView) {
                     if (mHeadView == null) {
                         mHeadView = (ExtraView) childView;
-                        mHeadView.setPosTag(RefreshViewTool.POS_HEADER);
                     } else {
                         mFootView = (ExtraView) childView;
-                        mFootView.setPosTag(RefreshViewTool.POS_FOOTER);
                     }
                 }
                 if (childView instanceof PullRefresh) {
@@ -72,18 +71,18 @@ public class FreshLayout extends RelativeLayout {
                 }
             }
         }
+        mTouchHandler.setView(this, mFreshView, mHeadView, mFootView);
     }
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
-        if (mTouchHandler == null) {
+        if (!isViewCreate) {
+            isViewCreate = true;
             findView();
             initView();
-            initData();
         }
-        if (mTouchHandler != null)
-            mTouchHandler.onLayout(l, r);
+        mTouchHandler.onLayout(l, r);
     }
 
     /**
@@ -94,15 +93,34 @@ public class FreshLayout extends RelativeLayout {
      */
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        if (mTouchHandler != null) mTouchHandler.dispatchTouchEvent(ev);
+        mTouchHandler.dispatchTouchEvent(ev);
         super.dispatchTouchEvent(ev);
         return true;
     }
 
     public void setOnFreshListener(OnFreshListener onFreshListener) {
-        if (mTouchHandler != null) mTouchHandler.setOnFreshListener(onFreshListener);
+        mTouchHandler.setOnFreshListener(onFreshListener);
+    }
+
+    public void setSuccess() {
+        mTouchHandler.setSuccess();
+    }
+
+    public void setFailed() {
+        mTouchHandler.setFailed();
     }
 
 
+    public View getContentView() {
+        return mFreshView;
+    }
 
+
+    public ExtraView getHeadView() {
+        return mHeadView;
+    }
+
+    public ExtraView getFootView() {
+        return mFootView;
+    }
 }

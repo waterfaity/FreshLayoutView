@@ -1,9 +1,12 @@
-package com.waterfairy.widget.freshlayoutview.fresh;
+package com.waterfairy.widget.refresh.baseView;
 
 import android.os.Handler;
 import android.os.Message;
 import android.view.MotionEvent;
 import android.view.View;
+
+import com.waterfairy.widget.refresh.inter.OnFreshListener;
+import com.waterfairy.widget.refresh.inter.PullRefresh;
 
 /**
  * @author water_fairy
@@ -11,7 +14,8 @@ import android.view.View;
  * @date 2018/5/2
  * @Description:
  */
-public class TouchHandler {
+public class TouchHandler implements View.OnClickListener {
+    private static final String TAG = "touchHandler";
     //view
     private FreshLayout mFreshLayout;
     private View mFreshView;
@@ -31,46 +35,44 @@ public class TouchHandler {
     private int mState;
     // 初始状态
     public static final int STATE_INIT = 0;
-    // 释放刷新
-//    public static final int STATE_RELEASE_TO_REFRESH = 1;
     // 正在刷新
-    public static final int STATE_REFRESHING = 2;
-    // 释放加载
-//    public static final int STATE_RELEASE_TO_LOAD = 3;
+    public static final int STATE_REFRESHING = 1;
     // 正在加载
-    public static final int STATE_LOADING = 4;
-    // 操作完毕
-    public static final int STATE_DONE = 5;
+    public static final int STATE_LOADING = 2;
+    // 刷新失败
+    public static final int STATE_REFRESH_FAILED = 3;
+    // 加载失败
+    public static final int STATE_LOAD_FAILED = 4;
 
     //下/上拉距离
-    private float mPullDownY, mPullUpY;
+    private int mPullDownY, mPullUpY;
     private float radio = 1;//距离指数
 
-    // 释放刷新的距离
-    private float mRefreshDist = 200;
-    // 释放加载的距离
-    private float mLoadMoreDist = 200;
     private OnFreshListener onFreshListener;
+    private int delayTime = 15;
 
     // 回滚速度
-    public float moveSpeed = 8;
+    public int moveSpeed = 8;
+    //回滚开关
+    public boolean canAutoScroll = true;
 
+    public TouchHandler() {
+    }
 
-    public TouchHandler(FreshLayout freshLayout, View freshView, ExtraView headView, ExtraView footView) {
+    public void setView(FreshLayout freshLayout, View freshView, ExtraView headView, ExtraView footView) {
         this.mFreshLayout = freshLayout;
         this.mFreshView = freshView;
         this.mHeadView = headView;
         this.mFootView = footView;
-        mLoadMoreDist = mFootView.getViewHeight();
-        mRefreshDist = mHeadView.getViewHeight();
-
     }
 
     public void dispatchTouchEvent(MotionEvent motionEvent) {
         switch (motionEvent.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                canAutoScroll = false;
                 mEvents = 0;
                 mLastY = motionEvent.getY();
+                release();
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
             case MotionEvent.ACTION_POINTER_UP:
@@ -80,41 +82,73 @@ public class TouchHandler {
                 handleMove(motionEvent);
                 break;
             case MotionEvent.ACTION_UP:
-                handleUp(motionEvent);
+                handleUp();
                 break;
 
         }
     }
 
-    private void handleUp(MotionEvent motionEvent) {
-        if (mPullDownY > mRefreshDist || -mPullDownY > mPullUpY) {
-            // 正在刷新时往下拉（正在加载时往上拉），释放后下拉头（上拉头）不隐藏
-            if (mPullDownY > mRefreshDist) {
-                setSate(STATE_REFRESHING);
-            } else if (-mPullDownY > mPullUpY) {
-                setSate(STATE_LOADING);
-            }
+    private void handleUp() {
+        // 正在刷新时往下拉（正在加载时往上拉），释放后下拉头（上拉头）不隐藏
+        if (mPullDownY > mHeadView.getFreshHeight()) {
+            setSate(STATE_REFRESHING);
+        } else if (-mPullUpY > mFootView.getFreshHeight()) {
+            setSate(STATE_LOADING);
         }
-        updateHandler.removeMessages(0);
-        updateHandler.sendEmptyMessageDelayed(0, 10);
+        canAutoScroll = true;
+        updateHandler.sendEmptyMessage(0);
     }
 
-
     private void setSate(int state) {
+        if (mState == state) return;
         switch (state) {
             case STATE_REFRESHING:
+                if (mState == STATE_LOADING) return;
                 mState = state;
                 if (onFreshListener != null) onFreshListener.onRefresh(mFreshLayout);
                 mHeadView.onLoading();
                 break;
             case STATE_LOADING:
+                if (mState == STATE_REFRESHING) return;
                 mState = state;
                 if (onFreshListener != null) onFreshListener.onLoadMore(mFreshLayout);
                 mFootView.onLoading();
                 break;
+            case STATE_LOAD_FAILED:
+                mFootView.onLoadingFailed();
+                reset();
+                break;
+            case STATE_REFRESH_FAILED:
+                mHeadView.onLoadingFailed();
+                reset();
+                break;
+            case STATE_INIT:
+                if (mState == STATE_LOADING) mFootView.onLoadingSuccess();
+                if (mState == STATE_REFRESHING) mHeadView.onLoadingSuccess();
+                reset();
+                break;
         }
     }
 
+    private void forbidScroll() {
+        canPullDown = false;
+        canPullUp = false;
+    }
+
+    private void release() {
+        canPullDown = true;
+        canPullUp = true;
+    }
+
+    private void reset() {
+        updateHandler.removeMessages(0);
+        mState = STATE_INIT;
+        canAutoScroll = true;
+        release();
+        if (mPullUpY != 0 || mPullDownY != 0) {
+            updateHandler.sendEmptyMessageDelayed(0, 500);
+        }
+    }
 
     /**
      * 移动处理
@@ -131,16 +165,13 @@ public class TouchHandler {
                 if (mPullDownY < 0) {
                     mPullDownY = 0;
                     canPullUp = true;
-                } else {
-                    canPullUp = false;
-                }
+                    canPullDown = false;
+                } else canPullDown = true;
                 if (mPullDownY > mFreshLayout.getMeasuredHeight()) {
                     mPullDownY = mFreshLayout.getMeasuredHeight();
                 }
-                if (mState == STATE_REFRESHING) {
+                if (mState != STATE_REFRESHING) {
                     // 正在加载的时候触摸移动
-
-                } else {
                     mHeadView.onViewMove(Math.abs(mPullDownY) / (float) mHeadView.getViewHeight());
                 }
             } else if (pullRefresh.canPullUp() && mState != STATE_REFRESHING && canPullUp) {
@@ -148,20 +179,15 @@ public class TouchHandler {
                 if (mPullUpY > 0) {
                     mPullUpY = 0;
                     canPullDown = true;
-                } else {
-                    canPullDown = false;
-                }
+                    canPullUp = false;
+                } else canPullUp = true;
                 if (mPullUpY < -mFreshLayout.getMeasuredHeight())
                     mPullUpY = -mFreshLayout.getMeasuredHeight();
-                if (mState == STATE_LOADING) {
+                if (mState != STATE_LOADING) {
                     // 正在加载的时候触摸移动
-                } else {
                     mFootView.onViewMove(Math.abs(mPullUpY) / (float) mFootView.getViewHeight());
                 }
-            } else {
-                release();
             }
-
         } else mEvents = 0;
         //计算位置改变指数
         mLastY = moveY;
@@ -177,18 +203,6 @@ public class TouchHandler {
         }
     }
 
-    private void changeState(int state) {
-        switch (state) {
-            case STATE_INIT:
-                //初始状态
-                break;
-        }
-    }
-
-    private void release() {
-        canPullDown = false;
-        canPullUp = false;
-    }
 
     public void setOnFreshListener(OnFreshListener onFreshListener) {
         this.onFreshListener = onFreshListener;
@@ -201,11 +215,11 @@ public class TouchHandler {
      * @param right
      */
     public void onLayout(int left, int right) {
-        int layoutTop = (int) (mPullDownY + mPullUpY);
-        int layoutBottom = (int) (mPullDownY + mPullUpY + mFreshLayout.getMeasuredHeight());
-        mFreshView.layout(left, layoutTop, right, layoutBottom);
-        mFootView.layout(left, layoutBottom, right, layoutBottom + mFootView.getViewHeight());
+        int layoutTop = (mPullDownY + mPullUpY);
+        int layoutBottom = (mPullDownY + mPullUpY + mFreshLayout.getMeasuredHeight());
         mHeadView.layout(left, layoutTop - mHeadView.getViewHeight(), right, layoutTop);
+        mFootView.layout(left, layoutBottom, right, layoutBottom + mFootView.getViewHeight());/**/
+        mFreshView.layout(left, layoutTop, right, layoutBottom);
     }
 
 
@@ -216,16 +230,18 @@ public class TouchHandler {
 
         @Override
         public void handleMessage(Message msg) {
-
+            removeMessages(0);
             // 回弹速度随下拉距离moveDeltaY增大而增大
-            moveSpeed = (float) (16 + 5 * Math.tan(Math.PI / 2 / mFreshLayout.getMeasuredHeight() * (mPullDownY + Math.abs(mPullUpY))));
-            if (mState == STATE_REFRESHING && mPullDownY <= mRefreshDist) {
+//            moveSpeed = (float) (8 + 5 * Math.tan(Math.PI / 2 / mFreshLayout.getMeasuredHeight() * (mPullDownY + Math.abs(mPullUpY))));
+            moveSpeed = ((Math.abs(mPullDownY) + Math.abs(mPullUpY)) / 8);
+            if (moveSpeed < 1) moveSpeed = 1;
+            if (mState == STATE_REFRESHING && mPullDownY <= mHeadView.getViewHeight()) {
                 //刷新中 ,恢复到一个headView 高度
-                mPullDownY = mRefreshDist;
+                mPullDownY = mHeadView.getViewHeight();
                 mFreshLayout.requestLayout();
-            } else if (mState == STATE_LOADING && -mPullUpY <= mLoadMoreDist) {
+            } else if (mState == STATE_LOADING && -mPullUpY <= mFootView.getViewHeight()) {
                 //加载中 ,恢复到一个footView 高度
-                mPullUpY = -mLoadMoreDist;
+                mPullUpY = -mFootView.getViewHeight();
                 mFreshLayout.requestLayout();
             } else {
                 if (mPullDownY > 0) {
@@ -238,11 +254,43 @@ public class TouchHandler {
                 } else {
                     mPullUpY = 0;
                 }
-                if (mPullUpY != 0 || mPullDownY != 0) {
-                    sendEmptyMessageDelayed(0, 10);
+                if (canAutoScroll && (mPullUpY != 0 || mPullDownY != 0)) {
+                    sendEmptyMessageDelayed(0, delayTime);
                 }
                 mFreshLayout.requestLayout();
             }
         }
     };
+
+    /**
+     * Called when a view has been clicked.
+     *
+     * @param v The view that was clicked.
+     */
+    @Override
+    public void onClick(View v) {
+        if (mState == STATE_REFRESH_FAILED) {
+            setSate(STATE_REFRESHING);
+        } else if (mState == STATE_LOAD_FAILED) {
+            setSate(STATE_LOADING);
+        }
+    }
+
+
+    /**
+     * 外部设置加载失败 前提是加载中/刷新中
+     */
+    public void setFailed() {
+        if (mState == STATE_REFRESHING) setSate(STATE_REFRESH_FAILED);
+        if (mState == STATE_LOADING) setSate(STATE_LOAD_FAILED);
+        else setSate(STATE_INIT);
+    }
+
+    /**
+     * 外部设置加载成功
+     */
+    public void setSuccess() {
+        setSate(STATE_INIT);
+    }
+
 }
