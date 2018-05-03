@@ -6,27 +6,32 @@ package com.waterfairy.widget.refresh.inter;
  * @date 2018/5/2
  * @Description:
  */
-public interface OnMoveStateChangeListener {
+public interface OnExtraViewStateChangeListener {
     /**
+     * @param pos
      * @param radio 0-1 继续下/上拉刷新  >1  松开刷新
      */
-    void onViewMove(float radio);
+    void onViewMove(int pos, float radio);
 
     /**
      * 刷新中
+     *
+     * @param pos
      */
-
-    void onLoading();
+    void onLoading(int pos);
 
     /**
      * 成功
+     *
+     * @param pos
      */
-    void onLoadingSuccess();
+    void onLoadingSuccess(int pos);
 
     /**
      * 失败
+     *
+     * @param pos
      */
-
-    void onLoadingFailed();
+    void onLoadingFailed(int pos);
 
 }

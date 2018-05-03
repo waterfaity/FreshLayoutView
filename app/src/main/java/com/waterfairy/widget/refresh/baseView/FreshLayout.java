@@ -6,9 +6,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.RelativeLayout;
 
+import com.waterfairy.widget.refresh.inter.BaseExtraView;
 import com.waterfairy.widget.refresh.inter.OnFreshListener;
 import com.waterfairy.widget.refresh.inter.PullRefresh;
-import com.waterfairy.widget.refresh.inter.RefreshViewTool;
 
 /**
  * @author water_fairy
@@ -24,7 +24,7 @@ import com.waterfairy.widget.refresh.inter.RefreshViewTool;
  */
 public class FreshLayout extends RelativeLayout {
     //view
-    private ExtraView mFootView, mHeadView;
+    private BaseExtraView mFootView, mHeadView;
     private View mFreshView;
     //touchHandler
     private TouchHandler mTouchHandler;
@@ -43,10 +43,10 @@ public class FreshLayout extends RelativeLayout {
 
 
     private void initView() {
-        if (mFootView != null)
-            mFootView.setPosTag(RefreshViewTool.POS_FOOTER);
-        if (mHeadView != null)
-            mHeadView.setPosTag(RefreshViewTool.POS_HEADER);
+//        if (mFootView != null)
+//            mFootView.setPosTag(BaseExtraView.POS_FOOTER);
+//        if (mHeadView != null)
+//            mHeadView.setPosTag(BaseExtraView.POS_HEADER);
     }
 
     private void findView() {
@@ -57,17 +57,17 @@ public class FreshLayout extends RelativeLayout {
             mFreshView = getChildAt(0);
             mFootView = new ExtraView(getContext());
             mHeadView = new ExtraView(getContext());
-            addView(mHeadView);
-            addView(mFootView);
+            addView((View) mHeadView);
+            addView((View) mFootView);
         } else if (childCount == 3) {
             //确保有3个view
             for (int i = 0; i < 3; i++) {
                 View childView = getChildAt(i);
-                if (childView instanceof ExtraView) {
+                if (childView instanceof BaseExtraView) {
                     if (mHeadView == null) {
-                        mHeadView = (ExtraView) childView;
+                        mHeadView = (BaseExtraView) childView;
                     } else {
-                        mFootView = (ExtraView) childView;
+                        mFootView = (BaseExtraView) childView;
                     }
                 }
                 if (childView instanceof PullRefresh) {
@@ -121,12 +121,12 @@ public class FreshLayout extends RelativeLayout {
     }
 
 
-    public ExtraView getHeadView() {
-        return mHeadView;
+    public View getHeadView() {
+        return (View) mHeadView;
     }
 
-    public ExtraView getFootView() {
-        return mFootView;
+    public View getFootView() {
+        return (View) mFootView;
     }
 
     public void setOnViewCreateListener(OnViewCreateListener onViewCreateListener) {

@@ -12,23 +12,20 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.waterfairy.widget.refresh.R;
-import com.waterfairy.widget.refresh.inter.OnMoveStateChangeListener;
-import com.waterfairy.widget.refresh.inter.RefreshViewTool;
+import com.waterfairy.widget.refresh.inter.BaseExtraView;
 
 /**
  * @author water_fairy
  * @email 995637517@qq.com
  * @date 2018/5/2
- * @Description: footView  headView
+ * @Description: footView  headView  实例 默认类
  */
-public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveStateChangeListener {
+public class ExtraView extends LinearLayout implements BaseExtraView {
     public static final int BLACK = 1;
     public static final int WHITE = 0;
     private int height;
 
     private RotateAnimation rotateAnimation;
-    //位置信息
-    private int posTag;
     //view
     private TextView mTVFresh;
     private ImageView mIVFresh;
@@ -40,16 +37,16 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
     private int imgSuccess;
     private int imgFailed;
 
-    public void setViewTheme(int style) {
+    public ExtraView setViewTheme(int style) {
         if (style == 0) {
-            setViewTheme(
+            return setViewTheme(
                     com.waterfairy.widget.refresh.R.color.refresh_bg_fresh_black,
                     R.color.refresh_white,
                     com.waterfairy.widget.refresh.R.mipmap.refresh_loading_black,
                     com.waterfairy.widget.refresh.R.mipmap.refresh_successed_black,
                     com.waterfairy.widget.refresh.R.mipmap.refresh_failed_black);
         } else {
-            setViewTheme(
+            return setViewTheme(
                     R.color.refresh_white,
                     R.color.refresh_bg_fresh_black,
                     R.mipmap.refresh_loading,
@@ -59,14 +56,14 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
     }
 
 
-    public void setViewTheme(int textColor, int bgColor, int imgLoading, int imgSuccess, int imgFailed) {
+    public ExtraView setViewTheme(int textColor, int bgColor, int imgLoading, int imgSuccess, int imgFailed) {
         this.textColor = textColor;
         this.bgColor = bgColor;
         this.imgLoading = imgLoading;
         this.imgSuccess = imgSuccess;
         this.imgFailed = imgFailed;
         mLoadingRes = imgLoading;
-
+        return this;
     }
 
     public ExtraView(Context context) {
@@ -85,11 +82,11 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
         rotateAnimation = (RotateAnimation) AnimationUtils.loadAnimation(getContext(), R.anim.refresh_rotate);
     }
 
-    public void setPosTag(int posTag) {
-        this.posTag = posTag;
+    public void freshView() {
+        initView();
     }
 
-    public void initView() {
+    private void initView() {
         mTVFresh.setTextColor(getResources().getColor(textColor));
         mIVFresh.setImageResource(imgLoading);
         setBackgroundColor(getResources().getColor(bgColor));
@@ -104,11 +101,6 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
 
 
     @Override
-    public int getPosTag() {
-        return posTag;
-    }
-
-    @Override
     public int getViewHeight() {
         if (height == 0)
             height = (int) (40 * getContext().getResources().getDisplayMetrics().density);
@@ -116,25 +108,26 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
     }
 
     /**
+     * @param pos
      * @param radio <1 继续下/上拉刷新  >1  松开刷新
      */
     @Override
-    public void onViewMove(float radio) {
+    public void onViewMove(int pos, float radio) {
         setIconRes(imgLoading);
         if (radio < 2) {
-            if (posTag == POS_HEADER) {
+            if (pos == POS_HEADER) {
                 mTVFresh.setText(R.string.fresh_pull_to_refresh);
-            } else if (posTag == POS_FOOTER) {
+            } else if (pos == POS_FOOTER) {
                 mTVFresh.setText(R.string.fresh_pull_up_to_load);
             }
         } else if (radio > 2) {
-            if (posTag == POS_HEADER) {
+            if (pos == POS_HEADER) {
                 mTVFresh.setText(R.string.fresh_release_to_refresh);
-            } else if (posTag == POS_FOOTER) {
+            } else if (pos == POS_FOOTER) {
                 mTVFresh.setText(R.string.fresh_release_to_refresh);
             }
         }
-        mIVFresh.setRotation(radio * 360 / 4);
+        mIVFresh.setRotation(radio * 360 / 3);
     }
 
     private void setIconRes(int loadingRes) {
@@ -146,12 +139,14 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
 
     /**
      * 刷新中
+     *
+     * @param pos
      */
     @Override
-    public void onLoading() {
-        if (posTag == POS_HEADER) {
+    public void onLoading(int pos) {
+        if (pos == POS_HEADER) {
             mTVFresh.setText(R.string.fresh_refreshing);
-        } else if (posTag == POS_FOOTER) {
+        } else if (pos == POS_FOOTER) {
             mTVFresh.setText(R.string.fresh_loading);
         }
         mIVFresh.startAnimation(rotateAnimation);
@@ -161,13 +156,13 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
      * 成功
      */
     @Override
-    public void onLoadingSuccess() {
+    public void onLoadingSuccess(int pos) {
         mIVFresh.clearAnimation();
         setIconRes(imgSuccess);
         mIVFresh.setRotation(0);
-        if (posTag == POS_HEADER) {
+        if (pos == POS_HEADER) {
             mTVFresh.setText(R.string.fresh_refresh_succeed);
-        } else if (posTag == POS_FOOTER) {
+        } else if (pos == POS_FOOTER) {
             mTVFresh.setText(R.string.fresh_load_succeed);
         }
     }
@@ -176,13 +171,13 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
      * 失败
      */
     @Override
-    public void onLoadingFailed() {
+    public void onLoadingFailed(int pos) {
         mIVFresh.clearAnimation();
         setIconRes(imgFailed);
         mIVFresh.setRotation(0);
-        if (posTag == POS_HEADER) {
+        if (pos == POS_HEADER) {
             mTVFresh.setText(R.string.fresh_refresh_failed);
-        } else if (posTag == POS_FOOTER) {
+        } else if (pos == POS_FOOTER) {
             mTVFresh.setText(R.string.fresh_load_failed);
         }
     }

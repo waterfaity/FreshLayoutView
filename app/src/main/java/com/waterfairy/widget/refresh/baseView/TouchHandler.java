@@ -5,6 +5,7 @@ import android.os.Message;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.waterfairy.widget.refresh.inter.BaseExtraView;
 import com.waterfairy.widget.refresh.inter.OnFreshListener;
 import com.waterfairy.widget.refresh.inter.PullRefresh;
 
@@ -19,7 +20,7 @@ public class TouchHandler implements View.OnClickListener {
     //view
     private FreshLayout mFreshLayout;
     private View mFreshView;
-    private ExtraView mHeadView, mFootView;
+    private BaseExtraView mHeadView, mFootView;
     //data
     // 过滤多点触碰
     private int mEvents;//正常==0
@@ -59,7 +60,7 @@ public class TouchHandler implements View.OnClickListener {
     public TouchHandler() {
     }
 
-    public void setView(FreshLayout freshLayout, View freshView, ExtraView headView, ExtraView footView) {
+    public void setView(FreshLayout freshLayout, View freshView, BaseExtraView headView, BaseExtraView footView) {
         this.mFreshLayout = freshLayout;
         this.mFreshView = freshView;
         this.mHeadView = headView;
@@ -106,25 +107,26 @@ public class TouchHandler implements View.OnClickListener {
                 if (mState == STATE_LOADING) return;
                 mState = state;
                 if (onFreshListener != null) onFreshListener.onRefresh(mFreshLayout);
-                mHeadView.onLoading();
+                mHeadView.onLoading(BaseExtraView.POS_HEADER);
                 break;
             case STATE_LOADING:
                 if (mState == STATE_REFRESHING) return;
                 mState = state;
                 if (onFreshListener != null) onFreshListener.onLoadMore(mFreshLayout);
-                mFootView.onLoading();
+                mFootView.onLoading(BaseExtraView.POS_FOOTER);
                 break;
             case STATE_LOAD_FAILED:
-                mFootView.onLoadingFailed();
+                mFootView.onLoadingFailed(BaseExtraView.POS_FOOTER);
                 reset();
                 break;
             case STATE_REFRESH_FAILED:
-                mHeadView.onLoadingFailed();
+                mHeadView.onLoadingFailed(BaseExtraView.POS_HEADER);
                 reset();
                 break;
             case STATE_INIT:
-                if (mState == STATE_LOADING) mFootView.onLoadingSuccess();
-                if (mState == STATE_REFRESHING) mHeadView.onLoadingSuccess();
+                if (mState == STATE_LOADING) mFootView.onLoadingSuccess(BaseExtraView.POS_FOOTER);
+                if (mState == STATE_REFRESHING)
+                    mHeadView.onLoadingSuccess(BaseExtraView.POS_HEADER);
                 reset();
                 break;
         }
@@ -172,7 +174,7 @@ public class TouchHandler implements View.OnClickListener {
                 }
                 if (mState != STATE_REFRESHING) {
                     // 正在加载的时候触摸移动
-                    mHeadView.onViewMove(Math.abs(mPullDownY) / (float) mHeadView.getViewHeight());
+                    mHeadView.onViewMove(BaseExtraView.POS_HEADER, Math.abs(mPullDownY) / (float) mHeadView.getViewHeight());
                 }
             } else if (pullRefresh.canPullUp() && mState != STATE_REFRESHING && canPullUp) {
                 mPullUpY += (moveY - mLastY) / radio;
@@ -185,7 +187,7 @@ public class TouchHandler implements View.OnClickListener {
                     mPullUpY = -mFreshLayout.getMeasuredHeight();
                 if (mState != STATE_LOADING) {
                     // 正在加载的时候触摸移动
-                    mFootView.onViewMove(Math.abs(mPullUpY) / (float) mFootView.getViewHeight());
+                    mFootView.onViewMove(BaseExtraView.POS_FOOTER, Math.abs(mPullUpY) / (float) mFootView.getViewHeight());
                 }
             }
         } else mEvents = 0;
@@ -217,8 +219,8 @@ public class TouchHandler implements View.OnClickListener {
     public void onLayout(int left, int right) {
         int layoutTop = (mPullDownY + mPullUpY);
         int layoutBottom = (mPullDownY + mPullUpY + mFreshLayout.getMeasuredHeight());
-        mHeadView.layout(left, layoutTop - mHeadView.getViewHeight(), right, layoutTop);
-        mFootView.layout(left, layoutBottom, right, layoutBottom + mFootView.getViewHeight());/**/
+        ((View) mHeadView).layout(left, layoutTop - mHeadView.getViewHeight(), right, layoutTop);
+        ((View) mFootView).layout(left, layoutBottom, right, layoutBottom + mFootView.getViewHeight());/**/
         mFreshView.layout(left, layoutTop, right, layoutBottom);
     }
 

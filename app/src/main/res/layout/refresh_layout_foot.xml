@@ -10,7 +10,7 @@
         android:layout_height="28dp"
         android:layout_centerVertical="true"
         android:layout_marginLeft="16dp"
-        android:src="@mipmap/refresh_loading"/>
+        android:src="@mipmap/refresh_loading_black"/>
 
     <TextView
         android:id="@+id/refresh_text"
@@ -21,6 +21,6 @@
         android:layout_centerInParent="true"
         android:gravity="center"
         android:text="@string/fresh_pull_to_refresh"
-        android:textColor="@color/refresh_white"
+        android:textColor="@color/refresh_bg_fresh_black"
         android:textSize="14sp"/>
 </RelativeLayout>
