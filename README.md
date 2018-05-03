@@ -108,8 +108,10 @@ xml布局(自定义head/foot view)
 ```
 ### 关于默认HeadView/FootView样式:
 ExtraView 中 <br><br>
-public static final int BLACK = 1;//黑色<br>
-public static final int WHITE = 0;//白色<br>
+```java
+public static final int BLACK = 1;//黑色
+public static final int WHITE = 0;//白色
+```
 
 支持修改背景颜色颜色 ,刷新icon<br>
 ```java
