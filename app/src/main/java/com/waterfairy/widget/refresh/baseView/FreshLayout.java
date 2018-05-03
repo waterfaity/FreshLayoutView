@@ -18,6 +18,9 @@ import com.waterfairy.widget.refresh.inter.RefreshViewTool;
  * 说明:
  * 1.以 FreshLayout 为父类布局
  * 2.添加字布局: 子布局两种 1>直接写滚动布局(默认添加head,foot)2>布局中加上 head和foot 布局
+ * 参考:
+ * git :https://github.com/jingchenUSTC/PullToRefreshAndLoad
+ * csdn:https://blog.csdn.net/zhongkejingwang/article/details/38868463
  */
 public class FreshLayout extends RelativeLayout {
     //view
