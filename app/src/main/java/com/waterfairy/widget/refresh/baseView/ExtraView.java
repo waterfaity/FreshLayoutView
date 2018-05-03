@@ -46,7 +46,7 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
     }
 
     private void initAnim() {
-        rotateAnimation = (RotateAnimation) AnimationUtils.loadAnimation(getContext(), R.anim.rotate);
+        rotateAnimation = (RotateAnimation) AnimationUtils.loadAnimation(getContext(), R.anim.refresh_rotate);
     }
 
     public void setPosTag(int posTag) {
@@ -59,7 +59,7 @@ public class ExtraView extends LinearLayout implements RefreshViewTool, OnMoveSt
     }
 
     private void addView() {
-        View inflate = LayoutInflater.from(getContext()).inflate(R.layout.refresh_foot, this, false);
+        View inflate = LayoutInflater.from(getContext()).inflate(R.layout.refresh_layout_foot, this, false);
         addView(inflate);
     }
 
