@@ -2,6 +2,10 @@
 
 ## 简介:
  上拉越界加载,下拉越界刷新
+## 依赖:
+```java
+implementation 'com.github.waterfaity:FreshLayoutView:1.5'
+```
 ##  使用说明:
  xml布局(默认)
 ```xml
