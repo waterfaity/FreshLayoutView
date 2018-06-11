@@ -32,7 +32,6 @@ public class FreshLayout extends RelativeLayout {
     public static final int STATE_REFRESHING = 3;
     public static final int STATE_LOADING_MORE = 4;
     public static final int STATE_NO_DATA = 5;
-    public static final int STATE_REFRESH_FAILED = 6;//刷新失败 防止第一次刷新没有数据而展示空白页
     //view
     private BaseNoDataView mNoDataView;
     private BaseExtraView mFootView, mHeadView;
@@ -42,6 +41,7 @@ public class FreshLayout extends RelativeLayout {
     //view是否已经创建
     private boolean isViewCreate;
     private OnViewCreateListener onViewCreateListener;
+    private boolean canLoadMore = true;//是否可以加载更多
 
     public FreshLayout(Context context) {
         this(context, null);
@@ -99,6 +99,7 @@ public class FreshLayout extends RelativeLayout {
             isViewCreate = true;
             findView();
             initView();
+            mTouchHandler.setCanLoadMore(canLoadMore);
             new Handler() {
                 @Override
                 public void handleMessage(Message msg) {
@@ -153,10 +154,6 @@ public class FreshLayout extends RelativeLayout {
             case STATE_NO_DATA:
                 mTouchHandler.setNoData();
                 break;
-            case STATE_REFRESH_FAILED:
-                setFailed();
-                break;
-
         }
     }
 
@@ -173,13 +170,17 @@ public class FreshLayout extends RelativeLayout {
         return mFreshView;
     }
 
-
     public View getHeadView() {
         return (View) mHeadView;
     }
 
     public View getFootView() {
         return (View) mFootView;
+    }
+
+    public void setCanLoadMore(boolean canLoadMore) {
+        this.canLoadMore = canLoadMore;
+        if (mTouchHandler != null) mTouchHandler.setCanLoadMore(canLoadMore);
     }
 
     public void setOnViewCreateListener(OnViewCreateListener onViewCreateListener) {

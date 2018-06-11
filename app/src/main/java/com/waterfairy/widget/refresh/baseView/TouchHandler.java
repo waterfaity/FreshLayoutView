@@ -60,6 +60,7 @@ public class TouchHandler implements View.OnClickListener {
     public int moveSpeed = 8;
     //回滚开关
     public boolean canAutoScroll = true;
+    private boolean canLoadMore;
 
     public TouchHandler() {
     }
@@ -189,7 +190,7 @@ public class TouchHandler implements View.OnClickListener {
                     // 正在加载的时候触摸移动
                     mHeadView.onViewMove(BaseExtraView.POS_HEADER, Math.abs(mPullDownY) / (float) mHeadView.getViewHeight());
                 }
-            } else if (pullRefresh.canPullUp() && mState != STATE_REFRESHING && canPullUp) {
+            } else if (pullRefresh.canPullUp() && mState != STATE_REFRESHING && canPullUp && canLoadMore) {
                 mPullUpY += (moveY - mLastY) / radio;
                 if (mPullUpY > 0) {
                     mPullUpY = 0;
@@ -249,8 +250,10 @@ public class TouchHandler implements View.OnClickListener {
         public void handleMessage(Message msg) {
             removeMessages(0);
             // 回弹速度随下拉距离moveDeltaY增大而增大
-//            moveSpeed = (float) (8 + 5 * Math.tan(Math.PI / 2 / mFreshLayout.getMeasuredHeight() * (mPullDownY + Math.abs(mPullUpY))));
-            moveSpeed = ((Math.abs(mPullDownY) + Math.abs(mPullUpY)) / 4);
+//            moveSpeed = (int) (8 + 5 * Math.tan(Math.PI / 2 / mFreshLayout.getMeasuredHeight() * (mPullDownY + Math.abs(mPullUpY))));
+            moveSpeed = ((Math.abs(mPullDownY) + Math.abs(mPullUpY)) / 6);
+
+
             if (moveSpeed < 1) moveSpeed = 1;
             if (mState == STATE_REFRESHING && mPullDownY <= mHeadView.getViewHeight()) {
                 //刷新中 ,恢复到一个headView 高度
@@ -299,7 +302,7 @@ public class TouchHandler implements View.OnClickListener {
      */
     public void setFailed() {
         if (mState == STATE_REFRESHING) setSate(STATE_REFRESH_FAILED);
-        if (mState == STATE_LOADING) setSate(STATE_LOAD_FAILED);
+        else if (mState == STATE_LOADING) setSate(STATE_LOAD_FAILED);
         else setSate(STATE_INIT);
     }
 
@@ -329,5 +332,9 @@ public class TouchHandler implements View.OnClickListener {
 
     public void setNoData() {
         setSate(STATE_NO_DATA);
+    }
+
+    public void setCanLoadMore(boolean canLoadMore) {
+        this.canLoadMore = canLoadMore;
     }
 }
