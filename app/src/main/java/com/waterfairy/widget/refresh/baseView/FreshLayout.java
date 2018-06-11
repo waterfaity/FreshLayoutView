@@ -1,12 +1,15 @@
 package com.waterfairy.widget.refresh.baseView;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.RelativeLayout;
 
 import com.waterfairy.widget.refresh.inter.BaseExtraView;
+import com.waterfairy.widget.refresh.inter.BaseNoDataView;
 import com.waterfairy.widget.refresh.inter.OnFreshListener;
 import com.waterfairy.widget.refresh.inter.PullRefresh;
 
@@ -23,7 +26,15 @@ import com.waterfairy.widget.refresh.inter.PullRefresh;
  * csdn:https://blog.csdn.net/zhongkejingwang/article/details/38868463
  */
 public class FreshLayout extends RelativeLayout {
+    //data
+    public static final int STATE_SUCCESS = 1;
+    public static final int STATE_FAILED = 2;
+    public static final int STATE_REFRESHING = 3;
+    public static final int STATE_LOADING_MORE = 4;
+    public static final int STATE_NO_DATA = 5;
+    public static final int STATE_REFRESH_FAILED = 6;//刷新失败 防止第一次刷新没有数据而展示空白页
     //view
+    private BaseNoDataView mNoDataView;
     private BaseExtraView mFootView, mHeadView;
     private View mFreshView;
     //touchHandler
@@ -43,29 +54,32 @@ public class FreshLayout extends RelativeLayout {
 
 
     private void initView() {
-//        if (mFootView != null)
-//            mFootView.setPosTag(BaseExtraView.POS_FOOTER);
-//        if (mHeadView != null)
-//            mHeadView.setPosTag(BaseExtraView.POS_HEADER);
     }
 
     private void findView() {
         //确保有1刷新view  或 1个footView,1个headView,1个刷新view
         int childCount = getChildCount();
-        if (childCount == 1) {
-            //只有一个刷新view
+        if (childCount == 1 || childCount == 2) {
+            //只有一个刷新view  和 空view
             mFreshView = getChildAt(0);
             mFootView = new ExtraView(getContext());
             mHeadView = new ExtraView(getContext());
             addView((View) mHeadView);
             addView((View) mFootView);
-        } else if (childCount == 3) {
-            //确保有3个view
-            for (int i = 0; i < 3; i++) {
+
+            if (childCount == 2) {
+                if (getChildAt(1) instanceof BaseNoDataView)
+                    mNoDataView = (BaseNoDataView) getChildAt(1);
+            }
+        } else if (childCount == 3 || childCount == 4) {
+            //确保有3个view  和 空view
+            for (int i = 0; i < childCount; i++) {
                 View childView = getChildAt(i);
                 if (childView instanceof BaseExtraView) {
                     if (mHeadView == null) {
                         mHeadView = (BaseExtraView) childView;
+                    } else if (childView instanceof BaseNoDataView) {
+                        mNoDataView = (BaseNoDataView) childView;
                     } else {
                         mFootView = (BaseExtraView) childView;
                     }
@@ -75,7 +89,7 @@ public class FreshLayout extends RelativeLayout {
                 }
             }
         }
-        mTouchHandler.setView(this, mFreshView, mHeadView, mFootView);
+        mTouchHandler.setView(this, mFreshView, mHeadView, mFootView, mNoDataView);
     }
 
     @Override
@@ -85,7 +99,14 @@ public class FreshLayout extends RelativeLayout {
             isViewCreate = true;
             findView();
             initView();
-            if (onViewCreateListener != null) onViewCreateListener.onViewCreate(this);
+            new Handler() {
+                @Override
+                public void handleMessage(Message msg) {
+                    super.handleMessage(msg);
+                    if (onViewCreateListener != null)
+                        onViewCreateListener.onViewCreate(FreshLayout.this);
+                }
+            }.sendEmptyMessageDelayed(0, 100);
         }
         mTouchHandler.onLayout(l, r);
     }
@@ -115,6 +136,38 @@ public class FreshLayout extends RelativeLayout {
         mTouchHandler.setFailed();
     }
 
+    public void setState(int state) {
+        switch (state) {
+            case STATE_SUCCESS:
+                setSuccess();
+                break;
+            case STATE_FAILED:
+                setFailed();
+                break;
+            case STATE_REFRESHING:
+                setRefreshing();
+                break;
+            case STATE_LOADING_MORE:
+                setLoadingMore();
+                break;
+            case STATE_NO_DATA:
+                mTouchHandler.setNoData();
+                break;
+            case STATE_REFRESH_FAILED:
+                setFailed();
+                break;
+
+        }
+    }
+
+    private void setRefreshing() {
+        mTouchHandler.setRefreshing();
+    }
+
+    private void setLoadingMore() {
+        mTouchHandler.setLoadingMore();
+
+    }
 
     public View getContentView() {
         return mFreshView;
@@ -133,7 +186,8 @@ public class FreshLayout extends RelativeLayout {
         this.onViewCreateListener = onViewCreateListener;
     }
 
-    public static interface OnViewCreateListener {
+
+    public interface OnViewCreateListener {
         void onViewCreate(FreshLayout freshLayout);
     }
 }

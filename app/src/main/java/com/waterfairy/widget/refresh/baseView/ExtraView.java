@@ -3,6 +3,7 @@ package com.waterfairy.widget.refresh.baseView;
 import android.content.Context;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.AnimationUtils;
@@ -23,6 +24,7 @@ import com.waterfairy.widget.refresh.inter.BaseExtraView;
 public class ExtraView extends LinearLayout implements BaseExtraView {
     public static final int BLACK = 1;
     public static final int WHITE = 0;
+    private static final String TAG = "extraView";
     private int height;
 
     private RotateAnimation rotateAnimation;
@@ -144,6 +146,7 @@ public class ExtraView extends LinearLayout implements BaseExtraView {
      */
     @Override
     public void onLoading(int pos) {
+        Log.i(TAG, "onLoading: " + pos);
         if (pos == POS_HEADER) {
             mTVFresh.setText(R.string.fresh_refreshing);
         } else if (pos == POS_FOOTER) {
@@ -186,6 +189,4 @@ public class ExtraView extends LinearLayout implements BaseExtraView {
     public float getFreshHeight() {
         return getViewHeight() * 2;
     }
-
-
 }

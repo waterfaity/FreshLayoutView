@@ -6,6 +6,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.waterfairy.widget.refresh.inter.BaseExtraView;
+import com.waterfairy.widget.refresh.inter.BaseNoDataView;
 import com.waterfairy.widget.refresh.inter.OnFreshListener;
 import com.waterfairy.widget.refresh.inter.PullRefresh;
 
@@ -21,6 +22,7 @@ public class TouchHandler implements View.OnClickListener {
     private FreshLayout mFreshLayout;
     private View mFreshView;
     private BaseExtraView mHeadView, mFootView;
+    private BaseNoDataView mNoDataView;
     //data
     // 过滤多点触碰
     private int mEvents;//正常==0
@@ -44,13 +46,15 @@ public class TouchHandler implements View.OnClickListener {
     public static final int STATE_REFRESH_FAILED = 3;
     // 加载失败
     public static final int STATE_LOAD_FAILED = 4;
+    // 没有数据
+    public static final int STATE_NO_DATA = 5;
 
     //下/上拉距离
     private int mPullDownY, mPullUpY;
     private float radio = 1;//距离指数
 
     private OnFreshListener onFreshListener;
-    private int delayTime = 15;
+    private int delayTime = 20;
 
     // 回滚速度
     public int moveSpeed = 8;
@@ -60,11 +64,12 @@ public class TouchHandler implements View.OnClickListener {
     public TouchHandler() {
     }
 
-    public void setView(FreshLayout freshLayout, View freshView, BaseExtraView headView, BaseExtraView footView) {
+    public void setView(FreshLayout freshLayout, View freshView, BaseExtraView headView, BaseExtraView footView, BaseNoDataView noDataView) {
         this.mFreshLayout = freshLayout;
         this.mFreshView = freshView;
         this.mHeadView = headView;
         this.mFootView = footView;
+        this.mNoDataView = noDataView;
     }
 
     public void dispatchTouchEvent(MotionEvent motionEvent) {
@@ -100,20 +105,22 @@ public class TouchHandler implements View.OnClickListener {
         updateHandler.sendEmptyMessage(0);
     }
 
-    private void setSate(int state) {
-        if (mState == state) return;
+    private boolean setSate(int state) {
+        if (mState == state) return false;
         switch (state) {
             case STATE_REFRESHING:
-                if (mState == STATE_LOADING) return;
+                if (mState == STATE_LOADING) return false;
                 mState = state;
                 if (onFreshListener != null) onFreshListener.onRefresh(mFreshLayout);
                 mHeadView.onLoading(BaseExtraView.POS_HEADER);
+                if (mNoDataView != null) mNoDataView.onClose();
                 break;
             case STATE_LOADING:
-                if (mState == STATE_REFRESHING) return;
+                if (mState == STATE_REFRESHING) return false;
                 mState = state;
                 if (onFreshListener != null) onFreshListener.onLoadMore(mFreshLayout);
                 mFootView.onLoading(BaseExtraView.POS_FOOTER);
+                if (mNoDataView != null) mNoDataView.onClose();
                 break;
             case STATE_LOAD_FAILED:
                 mFootView.onLoadingFailed(BaseExtraView.POS_FOOTER);
@@ -121,6 +128,11 @@ public class TouchHandler implements View.OnClickListener {
                 break;
             case STATE_REFRESH_FAILED:
                 mHeadView.onLoadingFailed(BaseExtraView.POS_HEADER);
+                if (mNoDataView != null) mNoDataView.onRefreshFailed();
+                reset();
+                break;
+            case STATE_NO_DATA:
+                if (mNoDataView != null) mNoDataView.onNoData();
                 reset();
                 break;
             case STATE_INIT:
@@ -130,6 +142,7 @@ public class TouchHandler implements View.OnClickListener {
                 reset();
                 break;
         }
+        return true;
     }
 
     private void forbidScroll() {
@@ -221,6 +234,8 @@ public class TouchHandler implements View.OnClickListener {
         int layoutBottom = (mPullDownY + mPullUpY + mFreshLayout.getMeasuredHeight());
         ((View) mHeadView).layout(left, layoutTop - mHeadView.getViewHeight(), right, layoutTop);
         ((View) mFootView).layout(left, layoutBottom, right, layoutBottom + mFootView.getViewHeight());/**/
+        if (mNoDataView != null && mNoDataView instanceof View)
+            ((View) mNoDataView).layout(left, layoutTop, right, mFreshLayout.getMeasuredHeight());
         mFreshView.layout(left, layoutTop, right, layoutBottom);
     }
 
@@ -235,7 +250,7 @@ public class TouchHandler implements View.OnClickListener {
             removeMessages(0);
             // 回弹速度随下拉距离moveDeltaY增大而增大
 //            moveSpeed = (float) (8 + 5 * Math.tan(Math.PI / 2 / mFreshLayout.getMeasuredHeight() * (mPullDownY + Math.abs(mPullUpY))));
-            moveSpeed = ((Math.abs(mPullDownY) + Math.abs(mPullUpY)) / 8);
+            moveSpeed = ((Math.abs(mPullDownY) + Math.abs(mPullUpY)) / 4);
             if (moveSpeed < 1) moveSpeed = 1;
             if (mState == STATE_REFRESHING && mPullDownY <= mHeadView.getViewHeight()) {
                 //刷新中 ,恢复到一个headView 高度
@@ -295,4 +310,24 @@ public class TouchHandler implements View.OnClickListener {
         setSate(STATE_INIT);
     }
 
+    public void setRefreshing() {
+        if (mHeadView != null) {
+            mPullDownY = mHeadView.getViewHeight();
+            setSate(STATE_REFRESHING);
+            mFreshLayout.requestLayout();
+        }
+    }
+
+    public void setLoadingMore() {
+        if (mFootView != null) {
+            mPullUpY = mFootView.getViewHeight();
+            mFreshLayout.requestLayout();
+            setSate(STATE_LOADING);
+            mFreshLayout.requestLayout();
+        }
+    }
+
+    public void setNoData() {
+        setSate(STATE_NO_DATA);
+    }
 }
