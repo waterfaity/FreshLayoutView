@@ -61,6 +61,7 @@ public class TouchHandler implements View.OnClickListener {
     //回滚开关
     public boolean canAutoScroll = true;
     private boolean canLoadMore;
+    private boolean canRefresh;
 
     public TouchHandler() {
     }
@@ -175,7 +176,7 @@ public class TouchHandler implements View.OnClickListener {
         float moveY = motionEvent.getY();
         PullRefresh pullRefresh = (PullRefresh) mFreshView;
         if (mEvents == 0) {
-            if (pullRefresh.canPullDown() && mState != STATE_LOADING && canPullDown) {
+            if (pullRefresh.canPullDown() && mState != STATE_LOADING && canPullDown&&canRefresh) {
                 //下拉
                 mPullDownY += (moveY - mLastY) / radio;
                 if (mPullDownY < 0) {
@@ -336,5 +337,9 @@ public class TouchHandler implements View.OnClickListener {
 
     public void setCanLoadMore(boolean canLoadMore) {
         this.canLoadMore = canLoadMore;
+    }
+
+    public void setCanRefresh(boolean canRefresh) {
+        this.canRefresh = canRefresh;
     }
 }

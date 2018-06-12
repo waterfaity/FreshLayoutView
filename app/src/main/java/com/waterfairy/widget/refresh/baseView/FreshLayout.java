@@ -42,6 +42,7 @@ public class FreshLayout extends RelativeLayout {
     private boolean isViewCreate;
     private OnViewCreateListener onViewCreateListener;
     private boolean canLoadMore = true;//是否可以加载更多
+    private boolean canRefresh = true;
 
     public FreshLayout(Context context) {
         this(context, null);
@@ -100,6 +101,7 @@ public class FreshLayout extends RelativeLayout {
             findView();
             initView();
             mTouchHandler.setCanLoadMore(canLoadMore);
+            mTouchHandler.setCanLoadMore(canRefresh);
             new Handler() {
                 @Override
                 public void handleMessage(Message msg) {
@@ -181,6 +183,11 @@ public class FreshLayout extends RelativeLayout {
     public void setCanLoadMore(boolean canLoadMore) {
         this.canLoadMore = canLoadMore;
         if (mTouchHandler != null) mTouchHandler.setCanLoadMore(canLoadMore);
+    }
+
+    public void setCanRefresh(boolean canRefresh) {
+        this.canRefresh = canRefresh;
+        if (mTouchHandler != null) mTouchHandler.setCanRefresh(canRefresh);
     }
 
     public void setOnViewCreateListener(OnViewCreateListener onViewCreateListener) {
